@@ -1,9 +1,9 @@
 # Teaspring
 
 Problem description:
-* A question, with a number of layers each specifying a color and a volume.
-* An inventory of inks, each of which has a color and a cost per unit volume.
-* For each layer in the question, select an ink from our inventory which we should use to print a t-shirt!
+* Number of layers each specifying a color and a volume is provided.
+* An inventory of inks, each of which has a color and a cost per unit volume is provided.
+* For each layer, we should select an ink from inventory to print a t-shirt.
 
 Calculate Color difference:
 
