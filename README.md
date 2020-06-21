@@ -22,7 +22,7 @@ function colorDistance2d(v1, v2){
 Option2 (More accurate and lower time complexity):
 * we can calculate the color difference as the 3 dimensional distance between each RBG ink color and the RGB.
 
-1) Convert all hex colors in inventory to RGB, O(n) for n color in inventory
+1) Convert all hex colors in inventory to RGB, **O(n)** for n color in inventory
 #0B40F1 -> rgb(11, 64, 241)
 ```
 {
@@ -42,8 +42,7 @@ Option2 (More accurate and lower time complexity):
 }
 ```
 
-2) Create and store list of 3 dimensional point (Red, Green, Blue) in kd-tree 
-, O(kn log n)
+2) Create and store list of 3 dimensional point (Red, Green, Blue) in kd-tree, **O(kn log n)**
 3) Store the kd-Tree in memory cache to avoid recalculation
 ```
 function colorDistance3d(a, b) {
@@ -74,7 +73,7 @@ const nearest = CachedKdTree.nearest(targetColorRgbA, limit)
   ]
 }
 ```
-5) Search the kd-tree to find the closest colors(neighbours), O(log n)
+5) Search the kd-tree to find the closest colors(neighbours), **O(log n)**
 
 
 * k-d tree (short for k-dimensional tree) is a space-partitioning data structure for organizing points in a k-dimensional space.
