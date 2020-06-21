@@ -7,7 +7,7 @@ Problem description:
 
 Calculate Color difference:
 
-Option1:
+**Option1**
 * We can calculate the color difference as the Euclidean distance between each RBG ink color and the RGB.
 
 ```
@@ -20,7 +20,7 @@ function colorDistance2d(v1, v2){
 }
 ```
 
-Option2 (More accurate and lower time complexity):
+**Option2** (More accurate and lower time complexity):
 * we can calculate the color difference as the 3 dimensional distance between each RBG ink color and the RGB.
 
 1) Convert all hex colors in inventory to RGB, **O(n)** for n color in inventory
@@ -84,7 +84,7 @@ const nearest = CachedKdTree.nearest(targetColorRgbA, limit)
 * k-d tree implementation is borrowed from https://github.com/ubilabs/kd-tree-javascript
 
 
-Technologies that is used:
+**Technologies that is used**
 * React
 * MongoDB
 * Mongoose
