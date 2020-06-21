@@ -5,7 +5,8 @@ Problem description:
 * An inventory of inks, each of which has a color and a cost per unit volume.
 * For each layer in the question, select an ink from our inventory which we should use to print a t-shirt!
 
-Color difference:
+Calculate Color difference:
+
 Option1:
 * We can calculate the color difference as the Euclidean distance between each RBG ink color and the RGB.
 
