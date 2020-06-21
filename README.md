@@ -78,7 +78,7 @@ const nearest = CachedKdTree.nearest(targetColorRgbA, limit)
 
 
 * k-d tree (short for k-dimensional tree) is a space-partitioning data structure for organizing points in a k-dimensional space.
-![Alt text](/img/3dtree.png "kdTree")
+![Alt text](/img/3dtree.png =50x50)
 
 * k-d tree implementation is borrowed from https://github.com/ubilabs/kd-tree-javascript
 
@@ -108,9 +108,9 @@ or for hot module reloading
 Navigate to:
 `http://localhost:3000/`
 
-![Alt text](/img/teaspring1 "teaspring")
+![Alt text](/img/teaspring1.png "teaspring")
 
-![Alt text](/img/teaspring1 "teaspring")
+![Alt text](/img/teaspring2.png "teaspring")
 
 
 
