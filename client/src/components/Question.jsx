@@ -1,23 +1,9 @@
 import React from 'react'
-import gql from 'graphql-tag'
 import { useQuery } from '@apollo/react-hooks/lib'
 import { get } from 'lodash'
 
 import ColorNearGroup from './ColorNearGroup'
-
-const GET_QUESTIONS = gql`
-{
-  questions {
-    scenario_id
-    questions {
-      layers {
-      	color
-        volume
-    	}
-    }
-  }
-}
-`
+import GET_QUESTIONS_QUERY from '../actions/Questions'
 
 const Layer = ({ layers, title }) => {
   return (
@@ -30,7 +16,7 @@ const Layer = ({ layers, title }) => {
 }
 
 function Question() {
-  const { loading, error, data } = useQuery(GET_QUESTIONS)
+  const { loading, error, data } = useQuery(GET_QUESTIONS_QUERY)
   if (error) return <h1>Something went wrong!</h1>
   if (loading) return <div />
 
