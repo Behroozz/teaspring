@@ -34,6 +34,7 @@ module.exports = {
           selectedProps['id'] = get(nearNode, '_doc.id')
           selectedProps['color'] = get(nearNode, '_doc.color')
           selectedProps['cost'] = get(nearNode, '_doc.cost')
+          selectedProps['volume'] = volume
           selectedProps['threeDDistance'] = get(nearNode, 'threeDDistance')
           selectedProps['twoDDistance'] = colorDistance2d(nearNode.arrayColor, targetColorRgbA.arrayColor)
           selectedProps['volumeCost'] = volume * get(nearNode, '_doc.cost')
@@ -42,7 +43,8 @@ module.exports = {
         // To sort base on price
         // .sort((a, b) => a.volumeCost - b.volumeCost)
         return {
-          nearest: resultWithDistance
+          nearest: resultWithDistance,
+          kdTree: JSON.stringify(CachedKdTree)
         }
       } catch (ex) {
         console.log(ex)

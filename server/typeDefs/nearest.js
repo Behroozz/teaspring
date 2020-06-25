@@ -16,7 +16,8 @@ module.exports = gql`
   }
 
   type Nearest {
-    nearest: [Near]
+    nearest: [Near],
+    kdTree: String
   }
 
   type Near {
@@ -27,6 +28,7 @@ module.exports = gql`
     id: String!
     color: String!
     cost: Float!,
+    volume: Float!,
     threeDDistance: Float!,
     twoDDistance: Float!,
     volumeCost: Float!
