@@ -46,6 +46,7 @@ function Nearest({ layerColor }) {
   const { color, volume } = layerColor
   const [getNearestColors, { loading, data }] = useMutation(GET_NEAREST_COLORS);
   const [isSending, setIsSending] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   const isMounted = useRef(true)
   // set isMounted to false when we unmount the component
@@ -54,6 +55,11 @@ function Nearest({ layerColor }) {
       isMounted.current = false
     }
   }, [])
+
+  const onClick = () => {
+    setIsExpanded(!isExpanded) 
+    updateNearestColors()
+  }
 
   const updateNearestColors = useCallback(async () => {
     // don't send again while we are sending or loading
@@ -70,7 +76,7 @@ function Nearest({ layerColor }) {
     // once the request is sent, update state again
     if (isMounted.current) // only update if we are still mounted
       setIsSending(false)
-  }, [isSending]) // update the callback if the state changes
+  }, [isSending, isExpanded]) // update the callback if the state changes
 
   const nearestColors = get(data, 'calculateNearestColors.nearest')
 
@@ -81,10 +87,10 @@ function Nearest({ layerColor }) {
         type="button"
         style={buttonStyle}
         disabled={isSending}
-        onClick={updateNearestColors}
+        onClick={onClick}
         value={'Answer(s)'}
       />
-      {nearestColors && <ColorGroup
+      {isExpanded && nearestColors && <ColorGroup
         group={get(data, 'calculateNearestColors.nearest')}
         title=''
         type='nearest'
