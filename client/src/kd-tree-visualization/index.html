@@ -1,0 +1,572 @@
+<html>
+
+<head>
+  <style>
+    #control-button {
+      position: absolute;
+      margin-top: 10px;
+      margin-left: 10px;
+      opacity: 0.0;
+      transition: opacity .5s ease-in-out;
+    }
+
+    #hint-text {
+      color: #bfbfbf;
+      text-align: center;
+      width: 460px;
+      position: absolute;
+      margin-top: 210px;
+      margin-left: 10px;
+      opacity: 1.0;
+      transition: opacity .25s ease-in-out;
+    }
+
+    #picked {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #000;
+    }
+
+    #left {
+      float: left;
+    }
+
+    #results {
+      float: left;
+      margin-left: 10px;
+    }
+
+    body {
+      font-family: sans-serif;
+    }
+
+    li {
+      padding: 5px;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0px;
+    }
+
+    .tooltip {
+      height: 26px;
+      color: #333;
+      background-color: rgba(255, 255, 255, 1.0);
+      border: 1px rgba(0, 0, 0, 0.66) solid;
+      border-radius: 13px;
+      /*padding: 15px;*/
+      /*padding-left: 15px;*/
+      padding-right: 13px;
+      /*padding-top: 10px;*/
+    }
+
+    .tooltip p {
+      display: inline-block;
+      margin-top: -10px;
+      margin-bottom: 0px;
+    }
+
+    .tooltip-swatch {
+      display: inline-block;
+      height: 26px;
+      width: 26px;
+      border-radius: 13px;
+    }
+
+    svg.kdtree {
+      border: 1px solid #DDD;
+    }
+
+    #kdtree {
+      display: inline-block;
+    }
+
+
+    /* binary tree */
+
+    #binarytree {
+      display: inline-block;
+    }
+
+    svg.binarytree {
+      border: 1px solid #DDD;
+    }
+
+    .node circle {
+      fill: #fff;
+      stroke: steelblue;
+      stroke-width: 3px;
+    }
+
+    .node text {
+      font: 12px sans-serif;
+    }
+
+    .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 2px;
+    }
+
+    .sp-picker-container {
+      margin: 20px;
+    }
+
+    .heading {
+      margin-left: 30px;
+    }
+
+    #results ul {
+      margin-top: 25px;
+    }
+
+    #results ul li div {
+      border-radius: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="row">
+    <div id="kdtree"></div>
+    <div id="binarytree"></div>
+  </div>
+  <script src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tinycolor/1.4.1/tinycolor.min.js"></script>
+  <script src="./kdTree.js"></script>
+  <script>
+    var fast = 400; // ms
+    var slow = 2500; // ms
+    var data;
+    var colorSubset = []
+    var tree = new kdTree(colorSubset, colorDistance, ["red", "green"]);
+    var bTree;
+    var rebalancing = false;
+
+    // Pretty good color distance from
+    // http://www.compuphase.com/cmetric.htm
+    function colorDistance(a, b) {
+      var dr = a.red - b.red;
+      var dg = a.green - b.green;
+      var db = a.blue - b.blue;
+      var redMean = (a.red + b.red) / 2;
+      return (2 + redMean / 256) * dr * dr + 4 * dg * dg + (2 + (255 - redMean) / 256) * db * db;
+    }
+
+    $(function () { // on document load
+
+
+      function update(color) {
+
+        // remove old search results
+        // nearest.forEach(function(d, i) {
+        //   d[0].node.isSearchResult = false;
+        // });
+
+        $("#picked").css('background', color.toHex());
+        var rgb = color.toRgb();
+        var search = { red: rgb.r, green: rgb.g, blue: rgb.b };
+        var nearest = tree.nearest(search, 4);
+        nearest.sort(function (a, b) { return a[1] - b[1] });
+        console.log('nearest', nearest)
+        // nearest.forEach(function(d, i) {
+        //   d[0].node.isSearchResult = true;
+        // });
+
+        var $list = $("#results ul");
+        $list.html("");
+        for (var i = 0; i < nearest.length; i++) {
+          var c = nearest[i][0];
+
+          var $box = $("<div>")
+            .css('background', c.hex)
+            .css('display', 'inline-block')
+            .css('margin-right', '10px')
+            .height('30px')
+            .width('30px');
+          var $line = $("<li>").append($box).append(c.title);
+          $list.append($line);
+        }
+
+        updateSearchResults(nearest);
+      }
+
+      function setRGBfromHex(hex_color) {
+        var color = new tinycolor(hex_color.hex).toRgb();
+        hex_color.red = color.r;
+        hex_color.green = color.g;
+        hex_color.blue = color.b;
+      }
+
+      tree = new kdTree(colorSubset, colorDistance, ["red", "green"]); //,"blue"]);
+      data = tree.pointsBFS();
+
+      // D3 kdtree
+
+      var margin = { top: 0, right: 0, bottom: 0, left: 0 },
+        width = 470 - margin.left - margin.right,
+        height = width - margin.top - margin.bottom,
+        pointRadius = 6;
+
+      var x = d3.scale.linear()
+        .range([0, width])
+        .domain([0, 255]);
+
+      var y = d3.scale.linear()
+        .range([height, 0])
+        .domain([0, 255]);
+
+      var hintText = d3.select("#kdtree").append("p")
+        .text("Click to add colors in 2D space to tree")
+        .attr("id", "hint-text")
+
+      var svg = d3.select("#kdtree").append("svg")
+        .attr("class", "kdtree")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+
+
+      var reorder = d3.select("#binarytree").append("button")
+        .text("Rebalance tree")
+        .attr("id", "control-button")
+        .on("click", function () {
+          tree = new kdTree(colorSubset, colorDistance, ["red", "green"]);
+          data = tree.pointsBFS();
+          rebalancing = true;
+          drawDataSubset(data);
+        });
+
+      var graph = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("width", width)
+        .attr("height", height);
+
+      var linesG = graph.append("g")
+        .attr("class", "lines");
+
+      var pointsG = graph.append("g")
+        .attr("class", "points");
+
+      var tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("z-index", "10")
+        .style("visibility", "hidden")
+
+      var swatch = tooltip.append("div")
+        .attr("class", "tooltip-swatch");
+
+      var label = tooltip.append("p")
+        .text("a simple tooltip");
+
+      // D3 binarytree
+
+      bTree = d3.layout.tree()
+        .size([height, width]);
+
+      var diagonal = d3.svg.diagonal()
+        .projection(function (d) { return [d.y, d.x]; });
+
+      var bSvg = d3.select("#binarytree").append("svg")
+        .attr("class", "binarytree")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+      var bLinesG = bSvg.append("g")
+        .attr("class", "lines");
+
+      var bPointsG = bSvg.append("g")
+        .attr("class", "points");
+
+
+      svg.on('click', function () {
+        coordinates = d3.mouse(this);
+        var red = x.invert(coordinates[0]);
+        var green = y.invert(coordinates[1]);
+        var color = d3.rgb(red, green, 128);
+        var object = { title: "user defined", hex: color.toString() };
+        setRGBfromHex(object);
+
+        // check for very similar colors; don't insert to keep layouter sane
+        var potentialDuplicates = tree.nearest(object, 1);
+        if (potentialDuplicates.length > 0) {
+          // var potentialDuplicate = potentialDuplicates[0][0];
+          var distance = potentialDuplicates[0][1];
+          if (distance < 10) return;
+        }
+
+        let inventory = {}
+        $(function () {
+          jQuery.getJSON('../mocks/inventory.json', function (data) {
+            console.log('data', data)
+            inventory = data
+            console.log('success');
+          }).error(function () {
+            console.log('error');
+          });
+        });
+
+        const temp = 
+[{"red":23,"green":176,"blue":216,"a":1,"arrayColor":[23,176,216],"$__":{"strictMode":true,"selected":{},"getters":{},"_id":"5ef5029d48a0f86803a2d44f","wasPopulated":false,"activePaths":{"paths":{"cost":"init","color":"init","id":"init","_id":"init","__v":"init","createdAt":"init","updatedAt":"init"},"states":{"ignore":{},"default":{},"init":{"_id":true,"id":true,"color":true,"cost":true,"__v":true,"createdAt":true,"updatedAt":true},"modify":{},"require":{}},"stateNames":["require","modify","init","default","ignore"]},"pathsToScopes":{},"cachedRequired":{},"session":null,"$setCalled":{},"emitter":{"_events":{},"_eventsCount":0,"_maxListeners":0},"$options":{"skipId":true,"isNew":false,"willInit":true}},"isNew":false,"$locals":{},"$op":null,"_doc":{"_id":"5ef5029d48a0f86803a2d44f","id":"VN1348","color":"#17B0D8","cost":12.39,"__v":0,"createdAt":"2020-06-25T20:01:33.567Z","updatedAt":"2020-06-25T20:01:33.567Z"},"$init":true},{"red":11,"green":64,"blue":241,"a":1,"arrayColor":[11,64,241],"$__":{"strictMode":true,"selected":{},"getters":{},"_id":"5ef5029d48a0f86803a2d450","wasPopulated":false,"activePaths":{"paths":{"cost":"init","color":"init","id":"init","_id":"init","__v":"init","createdAt":"init","updatedAt":"init"},"states":{"ignore":{},"default":{},"init":{"_id":true,"id":true,"color":true,"cost":true,"__v":true,"createdAt":true,"updatedAt":true},"modify":{},"require":{}},"stateNames":["require","modify","init","default","ignore"]},"pathsToScopes":{},"cachedRequired":{},"session":null,"$setCalled":{},"emitter":{"_events":{},"_eventsCount":0,"_maxListeners":0},"$options":{"skipId":true,"isNew":false,"willInit":true}},"isNew":false,"$locals":{},"$op":null,"_doc":{"_id":"5ef5029d48a0f86803a2d450","id":"FW4037","color":"#0B40F1","cost":9.66,"__v":0,"createdAt":"2020-06-25T20:01:33.567Z","updatedAt":"2020-06-25T20:01:33.567Z"},"$init":true},{"red":164,"green":186,"blue":30,"a":1,"arrayColor":[164,186,30],"$__":{"strictMode":true,"selected":{},"getters":{},"_id":"5ef5029d48a0f86803a2d451","wasPopulated":false,"activePaths":{"paths":{"cost":"init","color":"init","id":"init","_id":"init","__v":"init","createdAt":"init","updatedAt":"init"},"states":{"ignore":{},"default":{},"init":{"_id":true,"id":true,"color":true,"cost":true,"__v":true,"createdAt":true,"updatedAt":true},"modify":{},"require":{}},"stateNames":["require","modify","init","default","ignore"]},"pathsToScopes":{},"cachedRequired":{},"session":null,"$setCalled":{},"emitter":{"_events":{},"_eventsCount":0,"_maxListeners":0},"$options":{"skipId":true,"isNew":false,"willInit":true}},"isNew":false,"$locals":{},"$op":null,"_doc":{"_id":"5ef5029d48a0f86803a2d451","id":"PJ4273","color":"#A4BA1E","cost":5.77,"__v":0,"createdAt":"2020-06-25T20:01:33.568Z","updatedAt":"2020-06-25T20:01:33.568Z"},"$init":true},{"red":126,"green":58,"blue":140,"a":1,"arrayColor":[126,58,140],"$__":{"strictMode":true,"selected":{},"getters":{},"_id":"5ef5029d48a0f86803a2d452","wasPopulated":false,"activePaths":{"paths":{"cost":"init","color":"init","id":"init","_id":"init","__v":"init","createdAt":"init","updatedAt":"init"},"states":{"ignore":{},"default":{},"init":{"_id":true,"id":true,"color":true,"cost":true,"__v":true,"createdAt":true,"updatedAt":true},"modify":{},"require":{}},"stateNames":["require","modify","init","default","ignore"]},"pathsToScopes":{},"cachedRequired":{},"session":null,"$setCalled":{},"emitter":{"_events":{},"_eventsCount":0,"_maxListeners":0},"$options":{"skipId":true,"isNew":false,"willInit":true}},"isNew":false,"$locals":{},"$op":null,"_doc":{"_id":"5ef5029d48a0f86803a2d452","id":"HX0453","color":"#7E3A8C","cost":13.78,"__v":0,"createdAt":"2020-06-25T20:01:33.568Z","updatedAt":"2020-06-25T20:01:33.568Z"},"$init":true},{"red":195,"green":70,"blue":62,"a":1,"arrayColor":[195,70,62],"$__":{"strictMode":true,"selected":{},"getters":{},"_id":"5ef5029d48a0f86803a2d453","wasPopulated":false,"activePaths":{"paths":{"cost":"init","color":"init","id":"init","_id":"init","__v":"init","createdAt":"init","updatedAt":"init"},"states":{"ignore":{},"default":{},"init":{"_id":true,"id":true,"color":true,"cost":true,"__v":true,"createdAt":true,"updatedAt":true},"modify":{},"require":{}},"stateNames":["require","modify","init","default","ignore"]},"pathsToScopes":{},"cachedRequired":{},"session":null,"$setCalled":{},"emitter":{"_events":{},"_eventsCount":0,"_maxListeners":0},"$options":{"skipId":true,"isNew":false,"willInit":true}},"isNew":false,"$locals":{},"$op":null,"_doc":{"_id":"5ef5029d48a0f86803a2d453","id":"IS0846","color":"#C3463E","cost":12.85,"__v":0,"createdAt":"2020-06-25T20:01:33.568Z","updatedAt":"2020-06-25T20:01:33.568Z"},"$init":true}]        
+
+        function componentToHex(c) {
+          var hex = c.toString(16);
+          return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        function rgbToHex(r, g, b) {
+          return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+        }
+
+        let target = {"red":51,"green":184,"blue":255,"a":1,"arrayColor":[51,184,255],"color":"#33B8FF"}
+
+        temp.push(target)
+
+        temp.forEach(item => {
+          item['color'] = rgbToHex(item.red, item.green, item.blue)
+          let newObj = { title: "user defined", hex: item.color, red: item.red, green: item.green, blue: item.blue }
+          colorSubset.push(newObj);
+          tree.insert(newObj);
+        })
+
+        // colorSubset.push(object);
+        // tree.insert(object);
+        data = tree.pointsBFS();
+        drawDataSubset(data);
+      });
+
+      data = tree.pointsBFS();
+      drawDataSubset(data);
+
+      var i = 1;
+      function drawIteratively() {
+        drawDataSubset(data.slice(0, i));
+        if (i < data.length) {
+          i++;
+          setTimeout(drawIteratively, 250);
+        } else {
+          i = 1;
+        }
+      }
+
+      function transitionEnd() {
+        rebalancing = false;
+        // console.log("no longer rebalancing");
+      }
+
+      function drawDataSubset(dataSubset) {
+
+        if (dataSubset.length > 0) {
+          hintText.style("opacity", 0.0);
+        } else {
+          hintText.style("opacity", 1.0);
+        }
+
+        if (dataSubset.length > 1) {
+          reorder.style("opacity", 1.0);
+        } else {
+          reorder.style("opacity", 0.0);
+        }
+
+        // points
+        {
+
+          var pointsSelection = pointsG.selectAll(".point")
+            .data(dataSubset, function (d) { return d.hex + "point"; });
+
+          pointsSelection.enter()
+            .append("circle")
+            .attr("class", function (d) { d.fresh = true; return "point" })
+            .attr("class", "point")
+            .attr("dimension", function (d) { return d.dimension; })
+            .attr("r", pointRadius)
+            .attr("cx", function (d) { return x(d.red); })
+            .attr("cy", function (d) { return y(d.green); })
+            .style("fill", function (d) { return d3.rgb(d.hex); })
+            .style("stroke", function (d) { return d3.rgb(d.hex); })
+            .on("mouseover", function (d) {
+              if (d.fresh) return;
+              var parent = d.node;
+              while (parent) {
+                parent.onAccessPath = true;
+                parent = parent.parent;
+              }
+              drawDataSubset(data);
+            })
+            .on("mouseout", function (d) {
+              if (d.fresh) {
+                d.fresh = false;
+                return;
+              }
+              var parent = d.node;
+              while (parent) {
+                parent.onAccessPath = false;
+                parent = parent.parent;
+              }
+              drawDataSubset(data);
+            })
+
+          pointsSelection
+            .style("stroke-width", function (d) { return d.node.onAccessPath || d.node.isSearchResult ? 2 : 0; });
+
+          // lines
+
+          var selection = linesG.selectAll(".point-line")
+            .data(dataSubset, function (d) { return d.hex + "line"; });
+
+          selection // update
+            .style("stroke-width", function (d) { return d.node.onAccessPath ? 2 * height / 400 : height / 400; })
+            .transition().duration(function () { return rebalancing ? slow : fast }).each("end", transitionEnd)
+            .attr("x1", function (d) { return x(d.x1); })
+            .attr("y1", function (d) { return y(d.y1); })
+            .attr("x2", function (d) { return x(d.x2); })
+            .attr("y2", function (d) { return y(d.y2); })
+            .attr("stroke", function (d) {
+              switch (d.dimension) {
+                case 0: return d3.rgb(d.red, 0, 0);
+                case 1: return d3.rgb(0, d.green, 0);
+                // case 2: return "green";
+              }
+            })
+
+          selection.enter()
+            .append("line")
+            .attr("class", "point-line")
+            // .attr("stroke-width", function(d) { return w(d.depth); })
+            .attr("stroke-width", height / 400)
+            // .style("opacity", 0.8)
+            // start all animation from point
+            .attr("x1", function (d) { return x(d.red); })
+            .attr("y1", function (d) { return y(d.green); })
+            .attr("x2", function (d) { return x(d.red); })
+            .attr("y2", function (d) { return y(d.green); })
+            .attr("stroke", function (d) {
+              switch (d.dimension) {
+                case 0: return d3.rgb(d.red, 0, 0);
+                case 1: return d3.rgb(0, d.green, 0);
+                // case 2: return "green";
+              }
+            })
+            .transition()
+            .attr("x1", function (d) { return x(d.x1); })
+            .attr("y1", function (d) { return y(d.y1); })
+            .attr("x2", function (d) { return x(d.x2); })
+            .attr("y2", function (d) { return y(d.y2); })
+
+          selection // enter + update
+          // .transition()
+
+          selection.exit()
+            .remove();
+        }
+
+
+        // binary tree
+
+        {
+
+          // nodes
+
+          var depth = d3.max(dataSubset, function (d) { return d.depth; })
+
+          var binaryTreePoints = bPointsG.selectAll(".binarytreepoint")
+            .data(dataSubset, function (d) { return d.hex + "binarytreepoint"; });
+
+          binaryTreePoints.enter()
+            .append("circle")
+            .attr("class", "binarytreepoint")
+            .attr("dimension", function (d) { return d.dimension; })
+            .attr("r", pointRadius)
+            .style("fill", function (d) { return d3.rgb(d.hex); })
+            .style("stroke", function (d) { return d3.rgb(d.hex); });
+
+          binaryTreePoints // enter + update
+            .style("stroke-width", function (d) { return d.node.onAccessPath ? 2 : 0; })
+            .transition().duration(function () { return rebalancing ? slow : fast })
+            .attr("cx", function (d) {
+              if (!d.node.parent) {
+                d.node.bx = width / 2;
+              } else {
+                var inc = (width - 4 * pointRadius) / Math.pow(2, d.depth + 1);
+                if (d.node == d.node.parent.left) { // left child
+                  d.node.bx = d.node.parent.bx - inc;
+                } else { // right child
+                  d.node.bx = d.node.parent.bx + inc;
+                }
+              }
+              return d.node.bx;
+            })
+            .attr("cy", function (d) {
+              d.node.by = (d.depth * ((height - 4 * pointRadius) / depth)) + (2 * pointRadius);
+              return d.node.by;
+            })
+            .style("fill", function (d) { return d3.rgb(d.hex); })
+
+          binaryTreePoints.exit()
+            .remove();
+
+
+          // edges
+
+          var selection = bLinesG.selectAll(".binarytreepoint-edge")
+            .data(dataSubset, function (d) { return d.hex + "binarytreepoint-edge"; });
+
+          selection // update
+            .style("stroke-width", function (d) { return d.node.onAccessPath ? 2 * height / 400 : height / 400; })
+            .transition().duration(function () { return rebalancing ? slow : fast })
+            .attr("x1", function (d) { return d.node.parent ? d.node.parent.bx : d.node.bx; })
+            .attr("y1", function (d) { return d.node.parent ? d.node.parent.by : d.node.by; })
+            .attr("x2", function (d) { return d.node.bx; })
+            .attr("y2", function (d) { return d.node.by; })
+            .attr("stroke", function (d) {
+              // return "gray";
+              switch (d.dimension) {
+                case 0: return d3.rgb(d.red, 0, 0);
+                case 1: return d3.rgb(0, d.green, 0);
+                // case 2: return "green";
+              }
+            })
+
+          selection.enter()
+            .append("line")
+            .attr("class", "binarytreepoint-edge")
+            // .attr("stroke-width", function(d) { return w(d.depth); })
+            .attr("stroke-dasharray", "1,3")
+            .attr("stroke-width", height / 400)
+            .style("opacity", 0.8)
+            // start all animation from point
+            .attr("x1", function (d) { return d.node.parent ? d.node.parent.bx : d.node.bx; })
+            .attr("y1", function (d) { return d.node.parent ? d.node.parent.by : d.node.by; })
+            .attr("x2", function (d) { return d.node.parent ? d.node.parent.bx : d.node.bx; })
+            .attr("y2", function (d) { return d.node.parent ? d.node.parent.by : d.node.by; })
+            .attr("stroke", function (d) {
+              // return "gray";
+              switch (d.dimension) {
+                case 0: return d3.rgb(d.red, 0, 0);
+                case 1: return d3.rgb(0, d.green, 0);
+                // case 2: return "green";
+              }
+            })
+            .transition()
+            .attr("x1", function (d) { return d.node.parent ? d.node.parent.bx : d.node.bx; })
+            .attr("y1", function (d) { return d.node.parent ? d.node.parent.by : d.node.by; })
+            .attr("x2", function (d) { return d.node.bx; })
+            .attr("y2", function (d) { return d.node.by; })
+
+          selection // enter + update
+          // .transition()
+
+          selection.exit()
+            .remove();
+
+        }
+      }
+
+    });
+  </script>
+</body>
+
+</html>

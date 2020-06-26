@@ -114,7 +114,62 @@ Navigate to:
 ![Alt text](/img/teaspring2.png "teaspring")
 
 
+```
+query inventoryAndQuestions {
+  inventory {
+    inks {
+      id
+      color
+      cost
+      createdAt
+      updatedAt
+    }
+  }
+  questions {
+    scenario_id
+    questions {
+      layers {
+        color
+        volume
+      }
+    }
+  }
+}
 
+mutation calculateColor {
+  calculateNearestColors(
+    color: "#19BB27",
+    volume: 2.4258338848165577,
+    limit: 10
+  ) {
+    nearest {
+      red
+      green
+      blue
+      a
+      id
+      color
+      cost
+      volume
+      threeDDistance
+      twoDDistance
+      volumeCost
+    }
+    kdTree
+  }  
+}
+
+mutation postingAnswer {
+	postAnswers(scenario_id: "ade831c4-dd44-4205-b21b-1ac5304ebf75") {
+		scenario_id
+    answers {
+      inks 
+    }
+  }
+}
+
+
+```
 
 
 

@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon app.js",
-    "json:server": "json-server --watch mocks/mockData.json --port 3004"
+    "json:server": "json-server --watch mocks/mockData.json --port 3005"
   },
   "dependencies": {
     "apollo-server": "^2.12.0",

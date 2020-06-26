@@ -13,6 +13,11 @@ module.exports = gql`
       volume: Float!
       limit: Int
     ): Nearest
+    postAnswers(
+      scenario_id: String!
+      limit: String
+      method: String
+    ): Answer
   }
 
   type Nearest {
@@ -32,5 +37,13 @@ module.exports = gql`
     threeDDistance: Float!,
     twoDDistance: Float!,
     volumeCost: Float!
+  }
+  type InkSelection {
+    inks: [String!]
+  }
+
+  type Answer {
+    scenario_id: String!
+    answers: [InkSelection]
   }
 `
