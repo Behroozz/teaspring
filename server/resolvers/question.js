@@ -11,6 +11,7 @@ module.exports = {
         const headers =  getHeaders(process.env.QUESTION_PRACTICE_AUTH_TOKEN)
         const questions = await axios.get(URI, headers)
         const result = get(questions, 'data')
+        await Question.deleteMany()
         await Question.insertMany(result)
         return result
       } catch (ex) {
