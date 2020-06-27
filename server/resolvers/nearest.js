@@ -1,10 +1,11 @@
 
-const { get } = require('lodash')
-const { performance } = require('perf_hooks');
 const cache = require('memory-cache')
-const fs = require('fs');
+const fs = require('fs')
+const { get } = require('lodash')
+const { performance } = require('perf_hooks')
 const Inventory = require('../database/models/inventory')
 const Question = require('../database/models/question')
+const Answer = require('../database/models/answer')
 const { kdTree } = require('../helpers/kdTree')
 const { generateAnswers, getHeaders } = require('../helpers/ApiHelpers')
 const { colorDistance3d, inventoryColorToHex, hexToRgbA, colorDistance2d } = require('../helpers/colorUtils')
@@ -75,6 +76,8 @@ module.exports = {
         const questions = get(question, 'questions', [])
         const payload = generateAnswers(questions, scenario_id, limit, CachedKdTree, method)
 
+        await Answer.deleteMany()
+        await Answer.insertMany(payload)
         // const URI =  process.env.ANSWER_PRACTICE_ENDPOINT
         // const headers =  getHeaders(process.env.ANSWER_AUTH_TOKEN)
         // const answer = await axios.post(URI, payload, headers)
