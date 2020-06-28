@@ -60,7 +60,7 @@ module.exports = {
     },
     postAnswers: async (parent, { scenario_id, method = '3d', limit = 5 }, context, info) => {
       try {
-        var t0 = performance.now()
+        var t3 = performance.now()
 
         let CachedKdTree = cache.get('CachedKdTree')
         if (!CachedKdTree) {
@@ -83,14 +83,63 @@ module.exports = {
         // const answer = await axios.post(URI, payload, headers)
         // console.log('answer', answer)
 
-        var t1 = performance.now()
-        console.log("Call to get answer took " + (t1 - t0) + " milliseconds.")
+        var t4 = performance.now()
+        console.log("Call to get answer took " + (t4 - t3) + " milliseconds.")
 
         return payload
       } catch (ex) {
         console.log(ex)
         throw ex
       }
+    },
+  },
+  Query: {
+    batchQuery: async (parent, { ids, scenario_id }, { loaders }, info) => {
+      try {
+        let t0 = performance.now()
+
+        const finalAnswer = {
+          scenario_id: scenario_id,
+          answers: []
+        }
+        const colors = await loaders.loadMany(ids)
+
+        let CachedKdTree = cache.get('CachedKdTree')
+        if (!CachedKdTree) {
+          console.log('kdTree do not exist store in cache!')
+          const inventory = await Inventory.find({})
+          const tree = new kdTree(inventoryColorToHex(inventory), colorDistance3d, ["red", "green", "blue"])
+          cache.put('CachedKdTree', tree)
+          CachedKdTree = cache.get('CachedKdTree')
+        }
+
+        const question = await Question.findOne({ scenario_id: scenario_id })
+        const questions = get(question, 'questions', [])
+
+        questions.forEach(question => {
+          const layers = get(question, 'layers', [])
+          const answer = { inks: [] }
+          layers.forEach((layer, index) => {
+            const targetColor = get(layer, 'color')
+            const findColor = colors.find(color => color.questionColor === targetColor)
+            answer.inks.push(findColor.closestInventoryColorId)
+          })
+         finalAnswer.answers.push(answer)
+        })
+        let t1 = performance.now()
+        console.log("Call to get answer took for batchQuery " + (t1 - t0) + " milliseconds.")
+
+        return finalAnswer
+      } catch(ex) {
+        console.log('ex', ex)
+        throw ex
+      }
     }
   },
 }
+
+
+// const [ resp1, resp2 ] = await axios.all([
+//   questionsGet,
+//   inventoryGet
+// ])

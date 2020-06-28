@@ -20,6 +20,17 @@ module.exports = gql`
     ): Answer
   }
 
+  extend type Query {
+    batchQuery(
+      ids: [String],
+      scenario_id: String!
+    ): Answer
+  }
+
+  type Colors {
+    color: [String]
+  }
+
   type Nearest {
     nearest: [Near],
     kdTree: String
