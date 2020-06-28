@@ -19,8 +19,11 @@ const server = new ApolloServer({
     const contextObj = {}
     contextObj.loaders = dataloader
     return contextObj
-  }
-
+  },
+  // engine: {
+  //   apiKey: process.env.APOLLO_KEY,
+  //   reportSchema: true
+  // }
 })
 
 server.listen().then(({ url }) => console.log(`Server ready at ${url}`))
