@@ -1,7 +1,7 @@
 const gql = require('graphql-tag')
 const mongoose = require('mongoose')
 const { server } = require('../../app')
-const { startTestServer, toPromise } = require('../../helpers/testUtils')
+const { startTestServer, toPromise } = require('../../helpers/TestUtils')
 
 const POST_ANSWER = gql`
   mutation postingAnswer {

@@ -1,6 +1,6 @@
 const { get, head } = require('lodash')
 const { performance } = require('perf_hooks');
-const { hexToRgbA, colorDistance2d } = require('./colorUtils')
+const { hexToRgbA, colorDistance2d } = require('./ColorUtils')
 
 const getHeaders = (authToken) => {
   return {

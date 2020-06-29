@@ -8,7 +8,7 @@ const Question = require('../database/models/question')
 const Answer = require('../database/models/answer')
 const { kdTree } = require('../helpers/kdTree')
 const { generateAnswers, getHeaders } = require('../helpers/ApiHelpers')
-const { colorDistance3d, inventoryColorToHex, hexToRgbA, colorDistance2d } = require('../helpers/colorUtils')
+const { colorDistance3d, inventoryColorToHex, hexToRgbA, colorDistance2d } = require('../helpers/ColorUtils')
 
 module.exports = {
   Mutation: {

@@ -2,7 +2,7 @@ const cache = require('memory-cache')
 const { get } = require('lodash')
 const Inventory = require('../database/models/inventory')
 const { kdTree } = require('../helpers/kdTree')
-const { colorDistance3d, inventoryColorToHex, hexToRgbA, colorDistance2d } = require('../helpers/colorUtils')
+const { colorDistance3d, inventoryColorToHex, hexToRgbA, colorDistance2d } = require('../helpers/ColorUtils')
 
 module.exports.batchedColorFetching = async (colors) => {
   return new Promise(async (resolve, reject) => {
