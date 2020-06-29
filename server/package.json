@@ -4,10 +4,14 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon app.js",
-    "json:server": "json-server --watch mocks/mockDataDefault.json --port 3005"
+    "json:server": "json-server --watch mocks/mockDataDefault.json --port 3005",
+    "test": "env NODE_ENV=test jest --detectOpenHandles"
   },
   "dependencies": {
+    "apollo-link": "^1.2.14",
+    "apollo-link-http": "^1.5.17",
     "apollo-server": "^2.12.0",
+    "apollo-server-testing": "^2.15.0",
     "axios": "^0.19.2",
     "dataloader": "^2.0.0",
     "dotenv": "^8.2.0",
@@ -16,9 +20,12 @@
     "lodash": "^4.17.15",
     "memory-cache": "^0.2.0",
     "mongoose": "^5.9.19",
+    "node-fetch": "^2.6.0",
     "rainbowvis.js": "^1.0.1"
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.1.5",
+    "jest": "^26.1.0",
     "nodemon": "^2.0.3"
   }
 }

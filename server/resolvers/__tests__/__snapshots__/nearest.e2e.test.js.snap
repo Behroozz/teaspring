@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Server - e2e Get list of answers 1`] = `
+Object {
+  "data": Object {
+    "postAnswers": Object {
+      "answers": Array [
+        Object {
+          "inks": Array [
+            "HX0453",
+            "VN1348",
+          ],
+        },
+        Object {
+          "inks": Array [
+            "PJ4273",
+          ],
+        },
+      ],
+      "scenario_id": "ade831c4-dd44-4205-b21b-1ac5304ebf75",
+    },
+  },
+}
+`;
