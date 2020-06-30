@@ -9,9 +9,9 @@ module.exports = {
       try {
         const URI =  process.env.INVENTORY_ENDPOINT_TEMP
         const headers =  getHeaders(process.env.INVENTORY_AUTH_TOKEN)
-        const inventory = await axios.get(URI, headers)
         let dbInventory = await Inventory.find({})
         if (!dbInventory || dbInventory.length === 0) {
+          const inventory = await axios.get(URI, headers)
           dbInventory = await Inventory.insertMany(get(inventory, "data.inks"))
         }
         const response = {

@@ -21,6 +21,7 @@ module.exports = {
           console.log('kdTree do not exist store in cache!')
           const inventory = await Inventory.find({})
 
+          // TODO the conversion at inventory resolver
           // let data = JSON.stringify(inventoryColorToHex(inventory))
           // fs.writeFileSync('mocks/inventory.json', data)
           // fs.writeFileSync('mocks/target.json', JSON.stringify({ ...targetColorRgbA, color }))
@@ -32,8 +33,9 @@ module.exports = {
         const nearest = CachedKdTree.nearest(targetColorRgbA, limit)
         const sortedBaseOn3DDistance = nearest.sort(function (a, b) {
           return a.threeDDistance - b.threeDDistance
-        });
+        })
 
+        // TODO create a function to do the conversion
         resultWithDistance = sortedBaseOn3DDistance.map(nearNode => {
           let selectedProps = {}
           selectedProps['red'] = get(nearNode, 'red')

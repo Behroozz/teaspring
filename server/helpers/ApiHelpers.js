@@ -35,10 +35,12 @@ const generateAnswers = (questions, scenario_id, limit, CachedKdTree, method) =>
 }
 
 const getLayerAnswer = (targetColor, volume, CachedKdTree, limit, method) => {
+  // Get the nearest neighbors of the target color  
   const nearest = CachedKdTree.nearest(targetColor, limit)
   const sortedBaseDistance = nearest.sort(function (a, b) {
     return a.threeDDistance - b.threeDDistance
   })
+  // Map the nearest neighbors to set of required response attributes  
   const resultWithDistance = sortedBaseDistance.map(nearNode => {
     let selectedProps = {}
     selectedProps['id'] = get(nearNode, '_doc.id')
@@ -51,6 +53,7 @@ const getLayerAnswer = (targetColor, volume, CachedKdTree, limit, method) => {
     return selectedProps
   })
 
+  // Filter the nearest neighbors base on acceptable threshold 
   const threshold = method === '3d' ? process.env.THREE_D_COLOR_DIFF_THRESHOLD : process.env.TWO_D_COLOR_DIFF_THRESHOLD
   const thresholdList = resultWithDistance.filter(item => {
     if (method === '3d') {
@@ -61,6 +64,7 @@ const getLayerAnswer = (targetColor, volume, CachedKdTree, limit, method) => {
   })
 
   let layerChoice = {}
+  // If every neighbor is above threshold, grab the nearest item, otherwise the least volume cost
   if (thresholdList.length === 0) {
     layerChoice = head(resultWithDistance.sort((a, b) =>
       method === '3d' ? a.threeDDistance - b.threeDDistance : a.twoDDistance - b.twoDDistance
@@ -70,6 +74,7 @@ const getLayerAnswer = (targetColor, volume, CachedKdTree, limit, method) => {
       a.volumeCost - b.volumeCost
     ))
   }
+  // return the id of the selected color
   return get(layerChoice, 'id')
 }
 
