@@ -20,7 +20,7 @@
     "lodash": "^4.17.15",
     "memory-cache": "^0.2.0",
     "mongoose": "^5.9.19",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "rainbowvis.js": "^1.0.1"
   },
   "devDependencies": {
