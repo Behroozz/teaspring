@@ -10,7 +10,7 @@
   "dependencies": {
     "apollo-link": "^1.2.14",
     "apollo-link-http": "^1.5.17",
-    "apollo-server": "^2.12.0",
+    "apollo-server": "^2.25.3",
     "apollo-server-testing": "^2.15.0",
     "axios": "^0.19.2",
     "dataloader": "^2.0.0",
